@@ -11,7 +11,7 @@ class UsersController extends Controller
     public function __construct()
     {
         $this->middleware('auth', [
-            'only' => ['edit', 'update'],
+            'only' => ['edit', 'update', 'destroy'],
         ]);
         $this->middleware('guest', [
             'only' => ['create'],
@@ -82,4 +82,14 @@ class UsersController extends Controller
 
         return redirect()->route('users.show', $id);
     }
+
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        $this->authorize('destroy', $user);
+        $user->delete();
+        session()->flash('success', '成功删除用户！');
+        return back();
+    }
+
 }
