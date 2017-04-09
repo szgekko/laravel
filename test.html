@@ -1,0 +1,122 @@
+<select id="product">
+<option value="1">product 01</option>
+<option selected="selected" value="2">product 02</option>
+<option value="3">product 03</option>
+</select>
+<input type="text" class="input_txt" value="" id="code_1" maxlength="19" />
+<input type="button" class="input_btn" value="submit" onclick="tracking()"/>
+
+<script src="http://keleyi.com/keleyi/pmedia/jquery-1.9.1.min.js" type="text/javascript"></script> 
+<script type="text/javascript">
+var tracking = function (){
+		
+alert($("#product").val());
+alert($("#code_1").val());
+exit;
+
+var myCode = getCode($("#code_1").val());
+		loadingFn.open();
+		$.ajax({
+			type:"POST",
+			global:false,
+			url:BASEUSER+"/cha/qrcodetracking",
+			data:"qrcode="+myCode,
+			dataType:"JSON",
+			success:function(data){
+				if(data.code==1){
+					SubmitInfo(data.data.openid, data.data.qrcode, 'QrScan', data.data.SKU, data.data.productName, data.data.remark, 'Logistics');
+					if(data.msg==1){
+						window.location.href = BASEUSER+"/cha/step";
+					}
+					else{
+						window.location.href = BASEUSER+"/cha/step2";
+					}
+				}else{
+					loadingFn.close();
+					$("#showMsgText").html(data.msg);
+					showPop('#info_pop');
+				}		
+			}
+		});
+	}
+	
+	var calbackByTracking  = function (){		
+		//console.log('回调',ISLOGINTAG);		
+		closeAlert('#popQuery');
+		loadingFn.open();
+		$.ajax({
+			type:"POST",
+			global:false,
+			url:BASEUSER+"/cha/qrcodetracking",
+			data:"qrcode="+getCode($("#code_1").val()),
+			dataType:"JSON",
+			success:function(data){			
+				//loadingFn.close();	
+				if(data.code==1){
+					if(data.msg==1)
+						window.location.href = BASEUSER+"/cha/step";
+					else
+						window.location.href = BASEUSER+"/cha/step2";
+				}else{
+					loadingFn.close();
+					$("#showMsgText").html(data.msg);
+					showPop('#info_pop');
+				}
+			}
+		});
+		
+	}
+
+	var trackingFroBatch = function (){
+		if($("#code_2").val()==''){
+			$("#showMsgText").html("请输入原产国国名");
+			alertMsg("#popQuery")
+			return false;
+		}
+		if($("#code_3").val()==''){
+			$("#showMsgText").html("请输入产品批码");
+			showPop('#info_pop');
+			return false;
+		}
+		if(!ISLOGINTAG){
+			$("#showMsgText").html("请先登录");
+			showPop('#info_pop');
+			mainFun.login('calbackByTrackingFroBatch');
+		}else{
+			loadingFn.open();
+			$.ajax({
+				type:"POST",
+				global:false,
+				url:BASEUSER+"/cha/BatchtrackingNew",
+				data:"batch="+$("#code_3").val(),
+				dataType:"JSON",
+				success:function(data){
+					if(data.code==1){
+						if(data.msg==2)
+							window.location.href = BASEUSER+"/cha/step";
+						else
+							window.location.href = BASEUSER+"/cha/step2";
+					}else{
+						loadingFn.close();
+						$("#showMsgText").html(data.msg);
+						showPop('#info_pop');
+					}		
+				}
+			});
+		}
+	}
+
+
+
+
+
+
+
+
+// $(document).ready(
+// function () {
+// $("#product").change(function () {
+// alert($("#product").val());
+// });
+// })
+</script>
